@@ -1,5 +1,3 @@
-import debug from "./utils/debug";
-
 const initialState = {
   currentRoute: null, // when the route transition is done
   nextRoute: null,    // when is transitioning to the next route
@@ -16,7 +14,6 @@ export default function reducer(state=initialState, action) {
   case "ROUTER_NAVIGATE_START":
   case "ROUTER_NAVIGATE_FAILURE":
   case "ROUTER_PUSH_HISTORY":
-    debug("Running reducer for %s", type, payload);
     return Object.assign({}, state, payload);
   default:
     return state
