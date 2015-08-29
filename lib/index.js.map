@@ -1,0 +1,1 @@
+{"version":3,"sources":["../src/index.js"],"names":[],"mappings":";;;;;;;;sBAAmB,UAAU;;;;uBACT,WAAW;;;;oBACd,QAAQ;;;;;QAGhB,OAAO;QACP,IAAI","file":"index.js","sourcesContent":["import Router from \"./Router\";\nimport reducer from \"./reducer\";\nimport Link from \"./Link\";\n\nexport default Router;\nexport { reducer };\nexport { Link };\n"]}
