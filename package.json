@@ -6,7 +6,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "babel src -d lib -w -s",
-    "prepublish": "babel src -d lib -s",
+    "prepublish": "npm run build",
+    "build": "babel src -d lib -s",
     "lint": "eslint index.js src",
     "test": "mocha --compilers js:babel/register --recursive",
     "test:watch": "npm test -- --watch",
