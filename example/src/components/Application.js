@@ -55,7 +55,7 @@ class Application extends Component {
               <li><Link href="/developer/gpbl">the page of a developer</Link> - developer data will be fetched asyncronously, e.g from an API call</li>
               <li><Link href="/developer/gaearon">the page of another developer</Link> - click multiple times to see how the last route always wins</li>
               <li><Link href="/developer/not-exists">the page of developer that does not exist</Link> - e.g. when an API call responds with <code>status=404</code></li>
-              <li><Link href="/developer">a page that with a server error</Link> - e.g. when an API call responds <code>status=500</code></li>
+              <li><Link href="/developer">a page firing a server error</Link> - e.g. when an API call responds <code>status=500</code></li>
               <li><Link href="/foobar">a not existing route</Link></li>
             </ul>
           </p>
