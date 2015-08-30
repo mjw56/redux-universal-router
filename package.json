@@ -25,6 +25,7 @@
   "devDependencies": {
     "babel": "^5.8.21",
     "babel-eslint": "^4.1.0",
+    "coveralls": "^2.11.4",
     "eslint": "^1.2.1",
     "expect": "^1.9.0",
     "istanbul": "^0.3.18",
