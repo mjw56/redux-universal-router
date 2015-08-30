@@ -39,19 +39,19 @@ npm start
 
 ### 1. Define the routes as objects
 
-Routes are the same objects you pass to [routr](https://github.com/yahoo/routr), with two additional parameters:
+Routes are the same objects you would pass to [routr](https://github.com/yahoo/routr), with two additional parameters:
 
-* `handler` (required) is the react component that should will render the route
-* `actionCreator` (optional) is a redux action creator that will be dispatched before the route is rendered
-  - it will receive the route's params as the only argument
+* `handler` (required) is the React component that will render the route, when matched
+* `actionCreator` (optional) is a redux action creator returning an action dispatched *before* the route is rendered
+  - it will receive the route's params as argument
   - the action returned by the action creator must follow the [FSA standard](https://github.com/acdlite/flux-standard-action)
-  - if the `payload` returned by the action is a `Promise`, the route will wait for it before navigating to the new route
+  - if the action `payload` is a `Promise`, the route will wait for it before navigating to the new route
 
 ```js
 const routes = {
   home: {
     path: "/",
-    method: "get",    // remember this is required
+    method: "get",    // remember this is required by routr
     handler: HomePage
   },
   photo: {
@@ -66,12 +66,13 @@ const routes = {
 ### 2. Set up the reducer and the redux store
 
 To work correctly, the router's reducer must save its data in the `router` key
-in the root of the store:
+in the store's root. You can do this, for example, if you [`combineReducers`](https://rackt.github.io/redux/docs/api/combineReducers.html):
 
 ```js
-// add the router reducer
 import { combineReducers, createStore } from "rdux"
 import { reducer as router } from "redux-universal-router";
+
+// reducer must be named as `router`
 const reducer = combineReducers({ router } );
 
 // create the redux store
@@ -82,15 +83,17 @@ const store = createStore(reducer);
 ### 3. Server-side: create a router instance and render the root component
 
 Use `router.navigate(url, callback)` to render the root component.
-Remember you must create a new store and a new router for each request. So your middleware could look like:
+Remember you must create a new store and a new router for each request. For more information about server rendering with redux, [read the docs](https://rackt.github.io/redux/docs/recipes/ServerRendering.html). Your Express middleware would look like:
 
 ```js
+// handleServerRendering.js
 import React from "react";
 import { Provider } from "react-redux";
 import serialize from "serialize-javascript";
 
-function (req, res, next) {
+export default function handleServerRendering(req, res, next) {
 
+  // create a store and a router for each request
   const store = createStore(reducer);
   const router = new Router({ store, routes });
 
@@ -102,6 +105,7 @@ function (req, res, next) {
       </Provider>
     );
 
+    // dehydrate the store state
     const initialState = `window.__INITIALSTATE__=${serialize(store.getState())};`;
 
     if (err && err.statusCode) {
@@ -118,9 +122,15 @@ function (req, res, next) {
 
   });
 };
+
+// then, in your Express server, use the middleware:
+import handleServerRendering from "./handleServerRendering";
+app.use(handleServerRendering)
 ```
 
 ### 4. Client-side: create a router instance, listen to history and mount the root component
+
+This part is very similar to the server-side rendering: you initialize the store with the dehydrated state, listen to browser history and mount the root component on the DOM.
 
 ```js
 import { createStore } from "redux";
@@ -155,20 +165,20 @@ root component and use its data to know which route handler should be rendered.
 The router's store has three parameters: `currentRoute`, `nextRoute`
 and `err`, all optionals.
 
-In your root component, you want to render the `handler` component of the `currentRoute`.
-The component is available as `currentRoute.config.handler`.
+In your root component, you want to render the component hold by `currentRoute.config.handler`.
 
-* use `currentRoute` to know get the config of the current route. Careful: if the route is not available in your `routes`, this will be null.
-* use `nextRoute` to get the config of the route it's being called. It has a value only while navigating to a new route, e.g. when waiting to fetch data from an external API.
-* use `err` to know if you have to display an error when loading the route. The route's `actionCreator` can return an error with a `statusCode`, to render an error page or a "not-found" page.
-
+* use `currentRoute` to get the config of the current route. Careful: if the route is not available in your `routes`, this will be null.
+* use `nextRoute` to get the config of the route it's being called. It has a value only when navigating to a new route, e.g. while waiting for  data from an external API if you used the `actionCreator` in the routes' config.
+* use `err` to know the error to display instead of rendering the route's handler component. The route's `actionCreator` can return an error with a `statusCode`, so you know if you want to render a "not found" page or a generic error page.
 
 ```js
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { Link } from "redux-universal-router";
 
+// pass the router state as `props.router
 @connect(state => ( { router: state.router } ))
+
 class Application extends Component {
 
   render() {
@@ -180,10 +190,11 @@ class Application extends Component {
 
     return (
       <div>
-
+      
+        { !err && <Handler {...currentRoute.params} /> }
         { err && err.statusCode === 404 && <NotFoundPage /> }
         { err && err.statusCode !== 404 && <ErrorPage error={ err } /> }
-        { !err && <Handler {...currentRoute.params} /> }
+        
 
       </div>
     );
