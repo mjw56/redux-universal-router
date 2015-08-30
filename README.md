@@ -65,7 +65,7 @@ const routes = {
 
 #### Action creators examples
 
-With a route's action creator, you control the state of the store before rendering the route's handler. Let see some examples:
+With a route's action creator, you control the state of the store before rendering the route's handler.
 
 ##### To dispatch an action before rendering the route, return a simple object
 
@@ -89,8 +89,6 @@ const add = {
 ```
 
 ##### To dispatch _asynchronously_ an action before rendering a route, return a `Promise` as payload
-
-For example:
 
 ```js
 // Action creator
