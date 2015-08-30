@@ -9,7 +9,7 @@ A universal router designed for [redux](http://rackt.github.io/redux/).
 
 Highly inspired by [fluxible-router](https://github.com/yahoo/fluxible-router), it uses [routr](https://github.com/yahoo/routr) and [history](history).
 
-[![Build Status](https://travis-ci.org/gpbl/redux-universal-router.svg)](https://travis-ci.org/gpbl/redux-universal-router) [![Coverage Status](https://coveralls.io/repos/gpbl/redux-universal-router/badge.svg?branch=master&service=github)](https://coveralls.io/github/gpbl/redux-universal-router?branch=master)
+[![npm version](https://badge.fury.io/js/redux-universal-router.svg)](http://badge.fury.io/js/redux-universal-router) [![Build Status](https://travis-ci.org/gpbl/redux-universal-router.svg)](https://travis-ci.org/gpbl/redux-universal-router) [![Coverage Status](https://coveralls.io/repos/gpbl/redux-universal-router/badge.svg?branch=master&service=github)](https://coveralls.io/github/gpbl/redux-universal-router?branch=master) 
 
 ## This is a work-in progess
 
