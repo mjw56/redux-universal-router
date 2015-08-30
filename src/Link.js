@@ -1,7 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 
-import { pushHistory } from "./actions";
+import { navigate } from "./actions";
 
 @connect()
 class Link extends React.Component {
@@ -11,7 +11,7 @@ class Link extends React.Component {
     e.preventDefault();
 
     // push the url to the browser's history
-    this.props.dispatch(pushHistory(href));
+    this.props.dispatch(navigate(href));
 
   }
 
