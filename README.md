@@ -11,8 +11,7 @@ Highly inspired by [fluxible-router](https://github.com/yahoo/fluxible-router), 
 
 ## This is a work-in progess
 
-redux-universal-router is a baby-project, there's still work to be done, especially on the client-side part.
-API are not finished. Suggestions and PR are welcome :-)
+Not ready for production: redux-universal-router is a baby-project, there's still work to be done, especially on the client-side part.
 
 ## Usage
 
