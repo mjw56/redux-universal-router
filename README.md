@@ -9,7 +9,7 @@ A universal router designed for [redux](http://rackt.github.io/redux/).
 
 Highly inspired by [fluxible-router](https://github.com/yahoo/fluxible-router), it uses [routr](https://github.com/yahoo/routr) and [history](history).
 
-[![npm version](https://badge.fury.io/js/redux-universal-router.svg)](http://badge.fury.io/js/redux-universal-router) [![Build Status](https://travis-ci.org/gpbl/redux-universal-router.svg)](https://travis-ci.org/gpbl/redux-universal-router) [![Coverage Status](https://coveralls.io/repos/gpbl/redux-universal-router/badge.svg?branch=master&service=github)](https://coveralls.io/github/gpbl/redux-universal-router?branch=master) 
+[![npm version](https://badge.fury.io/js/redux-universal-router.svg)](http://badge.fury.io/js/redux-universal-router) [![Build Status](https://travis-ci.org/gpbl/redux-universal-router.svg)](https://travis-ci.org/gpbl/redux-universal-router) [![Coverage Status](https://coveralls.io/repos/gpbl/redux-universal-router/badge.svg?branch=master&service=github)](https://coveralls.io/github/gpbl/redux-universal-router?branch=master)
 
 ## This is a work-in progess
 
@@ -39,7 +39,7 @@ npm start
 
 ### 1. Define the routes as objects
 
-Routes are the same objects you would pass to [routr](https://github.com/yahoo/routr), with two additional parameters:
+Routes are the same objects you would pass to [routr](https://github.com/yahoo/routr), with two additional properties:
 
 * `handler` (required) is the React component that will render the route, when matched
 * `actionCreator` (optional) is a redux action creator returning an action dispatched *before* the route is rendered
@@ -62,6 +62,72 @@ const routes = {
   }
 };
 ```
+
+#### Action creators examples
+
+With a route's action creator, you control the state of the store before rendering the route's handler. Let see some examples:
+
+##### To dispatch an action before rendering the route, return a simple object
+
+```js
+// Action creator
+function addToDo({ text }) {
+  return {
+    type: "ADD_TODO",
+    payload: text
+  }
+}
+
+// route
+const add = {
+  path: "/todo/add/:text",
+  method: "get",
+  handler: ToDoPage,
+  actionCreator: addToDo     // dispatch the result of addToDo({ text }) before navigating to the route
+}
+
+```
+
+##### To dispatch _asynchronously_ an action before rendering a route, return a `Promise` as payload
+
+For example:
+
+```js
+// Action creator
+function requestPost({ postId }) {
+  return {
+    type: "REQUEST_POST",
+    payload: new Promise((resolve, reject) => {
+      request(`/api/post/${postId}`)
+      .end((err, res) => {
+
+        if (err) {
+          const responseError = new Error(res.text);
+          responseError.statusCode = err.status;
+          return reject(responseError);
+        }
+
+        resolve(res.body);
+
+      });
+
+    })
+  }
+}
+
+// route
+const post = {
+  path: "/posts/:postId",
+  method: "get",
+  handler: PostPage,
+  actionCreator: requestPost
+}
+```
+
+Returning a `Promise` will enable a special behaviour of the router:
+
+* when the promise is resolved, the router will dispatch a copy of the action with the resolved value as payload. In the example above, after a successfull `request`, the router will dispatch `{ type: "REQUEST_POST", payload: res.body }` before updating its state with the new route.
+* when the promise is rejected, it will dispatch a copy of the action with the rejected value as payload. The navigation will fail and the router state will get an `err` property. The router will dispatch `{ type: "REQUEST_POST", error: true, payload: responseError }`
 
 ### 2. Set up the reducer and the redux store
 
@@ -190,11 +256,11 @@ class Application extends Component {
 
     return (
       <div>
-      
+
         { !err && <Handler {...currentRoute.params} /> }
         { err && err.statusCode === 404 && <NotFoundPage /> }
         { err && err.statusCode !== 404 && <ErrorPage error={ err } /> }
-        
+
 
       </div>
     );
