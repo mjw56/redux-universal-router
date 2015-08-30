@@ -1,6 +1,6 @@
 {
   "name": "redux-universal-router",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "Universal router for redux",
   "repository": "https://github.com/gpbl/redux-universal-router",
   "main": "index.js",
