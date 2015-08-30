@@ -1,39 +1,44 @@
+import { types } from "./constants";
 
 export function navigateStart(route) {
+
   return {
-    type: "ROUTER_NAVIGATE_START",
+    type: types.ROUTER_NAVIGATE_START,
     payload: {
       nextRoute: route,
-      pushUrl: null     // cleanup url coming from the `pushHistory` action
+      pushUrl: null
     }
   }
 }
 
 export function navigateSuccess(route) {
   return {
-    type: "ROUTER_NAVIGATE_SUCCESS",
+    type: types.ROUTER_NAVIGATE_SUCCESS,
     payload: {
       nextRoute: null,
-      currentRoute: route
+      currentRoute: route,
+      err: null,
+      pushUrl: null
     }
   }
 }
 
 export function navigateFailure(route, err) {
   return {
-    type: "ROUTER_NAVIGATE_FAILURE",
+    type: types.ROUTER_NAVIGATE_FAILURE,
     error: true,
     payload: {
       nextRoute: null,
       currentRoute: route,
-      err: err
+      err: err,
+      pushUrl: null
     }
   }
 }
 
-export function pushHistory(url) {
+export function navigate(url) {
   return {
-    type: "ROUTER_PUSH_HISTORY",
+    type: types.ROUTER_NAVIGATE,
     payload: {
       pushUrl: url
     }
