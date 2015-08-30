@@ -1,1 +1,6 @@
 src
+example
+test
+.babelrc
+.eslintrc
+.travis.yml
