@@ -1,101 +1,130 @@
 import Routr from "routr";
 import { navigateStart, navigateSuccess, navigateFailure } from "./actions";
-
+import { isFSA } from "flux-standard-action";
 import createHistory from "history/lib/createBrowserHistory";
+import invariant from "invariant";
 
 function isSameRoute(route1, route2) {
-  // TODO: check params
-  return route1.name === route2.name;
+  return route1.url === route2.url;
+}
+
+function isPromise(thing) {
+  return thing && typeof thing.then === "function";
 }
 
 export default class Router {
 
   constructor({ store, routes }) {
-    this.routes = routes;
     this.store = store;
-    this.router = new Routr(routes);
+    this.routes = routes;
+    this.routr = new Routr(routes);
   }
 
-  listen() {
+  listen(history=createHistory()) {
 
-    // Listen to changes to the browser's history
-    this._history = createHistory();
-    this._unlistenHistoryListener = this._history.listen( ::this.handleHistoryChange );
-    this._unsubscribeStoreListener = this.store.subscribe( ::this.handleStoreChange );
-  }
+    // Listen for changes to the browser's history
+    this.history = history;
+    this.history.listen( ::this.handleHistoryChange );
 
-  unlisten() {
-    this._unlistenHistoryListener();
-    this._unsubscribeStoreListener();
+    // Listen for changes to the store
+    this.store.subscribe( ::this.handleStoreChange );
+
   }
 
   handleStoreChange() {
     const state = this.store.getState();
-    if (state.router && state.router.pushUrl) {
-      // TODO: add data for the scroll position
-      this._history.pushState({}, state.router.pushUrl);
+
+    invariant("router" in state, "The store must contain a router state in its root. Make sure you apply the router reducer to the `router` key.");
+
+    // TODO: add data for the scroll position
+    if (state.router.pushUrl) {
+      this.history.pushState({}, state.router.pushUrl);
     }
+
   }
 
   handleHistoryChange(location) {
-    this.navigate({
-      url: location.pathname
-    });
+    this.lastLocation = location;
+    this.navigate(location.pathname);
   }
 
-  navigate({ url }) {
+  navigate(url, done=() => { }) {
+    const { dispatch } = this.store;
+
     const route = this.matchRoute(url);
+
     if (!route) {
-      return Promise.reject({
-        statusCode: 404
-      });
+      const err = new Error("Route not found");
+      err.statusCode = 404;
+      dispatch(navigateFailure(null, err));
+      return done(err);
     }
 
-    // TODO: remove `handler` variable from route (cannot stay in store)
-    this.store.dispatch(navigateStart(route));
+    dispatch(navigateStart(route));
 
+    const { actionCreator } = route.config;
+
+    if (!actionCreator) {
+      // No need to dispatch an action
+      dispatch(navigateSuccess(route));
+      return done();
+    }
+
+    const action = actionCreator(route.params);
+    const { payload, error } = action;
+    invariant(isFSA(action), "Action must be a Flux Standard Action");
+
+    if (!isPromise(payload)) {
+      dispatch(action);
+      if (error) {
+        dispatch(navigateFailure(route, payload));
+        return done(payload);
+      }
+      dispatch(navigateSuccess(route));
+      return done();
+    }
+
+    // Action's payload is promise: save the current router for later reference
     this._currentRoute = route;
 
-    return new Promise((resolve, reject) => {
+    // ...and wait the promise is fullfilled before dispatching its result
+    // and the navigateSuccess/navigateFalure actions
+    payload.then(
 
-      if (!route.config.fetchData) {
-        // No need to fetch data async for this route
-        this.store.dispatch(navigateSuccess(route));
-        resolve({ isNotFound: false });
-        return;
+      result => {
+
+        if (!isSameRoute(route, this._currentRoute)) {
+          // The result of the promise may come after another navigation has
+          // been started. If we are handling an older route, we won't do
+          // anything here.
+          return;
+        }
+
+        // We expect the promise's result to be the action to be dispatched
+        // (similarly to the redux-promise middleware)
+        dispatch({ ...action, payload: result });
+
+        dispatch(navigateSuccess(route));
+        done();
+      },
+
+      err => {
+
+        if (!isSameRoute(route, this._currentRoute)) {
+          return;
+        }
+
+        dispatch({ ...action, payload: err, error: true });
+        dispatch(navigateFailure(route, err));
+        done(err);
       }
 
-      // Fetch data for this route
-      this.store.dispatch(route.config.fetchData(route))
-        .then(() => {
-
-          if (!isSameRoute(route, this._currentRoute)) {
-            return;
-          }
-          this.store.dispatch(navigateSuccess(route));
-          resolve({ isNotFound: false });
-        })
-        .catch(err => {
-          if (!isSameRoute(route, this._currentRoute)) {
-            return;
-          }
-          this.store.dispatch(navigateFailure(route, err));
-          if ((err.statusCode || err.status) === 404) {
-            resolve({
-              isNotFound: true
-            });
-            return;
-          }
-
-          reject(err);
-        })
-
-    });
+    );
 
   }
 
   matchRoute(url, options) {
-    const route = this.router.getRoute(url, options);
+    const route = this.routr.getRoute(url, options);
     if (!route) {
       return null;
     }
