@@ -1,0 +1,20 @@
+{
+  "plugins": ["react"],
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "rules": {
+
+    "react/jsx-curly-spacing": [1, "always"],
+    "react/jsx-no-duplicate-props": 1,
+    "react/jsx-no-undef": 1,
+    "react/jsx-quotes": [1, "double"],
+    "react/jsx-uses-react": 1,
+    "react/no-danger": 1,
+    "react/no-unknown-property": 1,
+    "react/self-closing-comp": 1,
+    "react/sort-comp": 1
+
+  }
+}

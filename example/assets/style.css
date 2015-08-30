@@ -1,0 +1,33 @@
+html {
+}
+body {
+  font-family: "Helvetica Neue";
+  font-weight: 200;
+  line-height: 1.2em;
+  font-size: 15px;
+}
+
+a {
+  color: #4A90E2;
+}
+
+h1, h2, h3 {
+  font-weight: 500;
+  font-family: "Avenir Next"
+}
+code, pre code {
+  background-color: #EFEFF4;
+  font-family: "Monaco";
+  font-size: 0.875rem;
+  padding: 3px 5px;
+  font-style: normal !important;
+}
+
+pre code {
+  display: block;
+  font-size: 0.75rem;
+}
+
+.page {
+  flex: 1;
+}
